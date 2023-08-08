@@ -41,17 +41,16 @@ func main() {
 
 	for update := range updates {
 		if update.Message != nil { // If we got a message
-			handlers.Logger.Log.Info("Request to bot", zap.String("UserName", update.Message.From.UserName),
-				zap.String("Text", update.Message.Text))
+			handlers.Logger.Log.Info("Request to bot", zap.String("UserName", update.Message.From.UserName))
 
-			if update.Message == nil { // Пропускаем все не текстовые обновления
+			if update.Message == nil {
 				continue
 			}
 
 			if update.Message.IsCommand() {
 				handler.HandleCommand(handlers, bot, update.Message)
 			} else {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, handlers.UnknownCommand.SendData())
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, handlers.FileForUnknown.SendData())
 				bot.Send(msg)
 			}
 		}
