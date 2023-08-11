@@ -69,8 +69,7 @@ func (h *Handler) RandomBeer(bot *tgbotapi.BotAPI, chatID int64) {
 		h.Logger.Log.Error("Error in RandomBeer(Marshal)", zap.Error(err))
 		return
 	}
-	msg := tgbotapi.NewMessage(chatID, string(beerBytes))
-	bot.Send(msg)
+	h.sendMessage(bot, chatID, string(beerBytes))
 }
 
 func (h *Handler) BeerName(bot *tgbotapi.BotAPI, chatID int64, name []byte) {
