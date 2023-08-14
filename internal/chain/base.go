@@ -26,6 +26,15 @@ func (b *BaseAdviser) SetNext(next MessageHandler) {
 	b.Next = next
 }
 
+func (b *BaseAdviser) sendPoll(chatID int64, question string, pollQuestions []string) error {
+	// send poll
+	poll := tgbotapi.NewPoll(chatID, question, pollQuestions...)
+	poll.AllowsMultipleAnswers = false
+	b.SendMsg(poll)
+
+	return nil
+}
+
 // SendMsg to telegram
 func (b *BaseAdviser) SendMsg(c tgbotapi.Chattable) {
 	if _, err := b.Bot.Send(c); err != nil {

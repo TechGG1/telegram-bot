@@ -1,15 +1,15 @@
 package main
 
 import (
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"log"
 	"os"
+	"runtime/debug"
 	"telegram-bot/internal/chain"
-	"telegram-bot/internal/handler"
-	"telegram-bot/internal/models"
 	"telegram-bot/logging"
 )
 
@@ -24,92 +24,79 @@ func main() {
 		logger.Log.Error("Error in loading env", zap.Error(err))
 	}
 
-	models.Bot, err = tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_BOT_TOKEN"))
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_BOT_TOKEN"))
 	if err != nil {
 		logger.Log.Error("Error in creating bot API", zap.Error(err))
 	}
 
-	models.Bot.Debug = true
+	bot.Debug = true
 
-	logger.Log.Info("Authorized on account", zap.String("bot info", models.Bot.Self.UserName))
+	logger.Log.Info("Authorized on account", zap.String("bot info", bot.Self.UserName))
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates := models.Bot.GetUpdatesChan(u)
+	updates := bot.GetUpdatesChan(u)
 
-	handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger)
+	//handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger)
 
 	//set chain
-	mood := &chain.Mood{
-		BaseAdviser: chain.BaseAdviser{
-			Bot: models.Bot,
-		},
-	}
 	taste := &chain.Taste{
 		BaseAdviser: chain.BaseAdviser{
-			Bot: models.Bot,
+			Bot: bot,
 		},
 	}
-	taste.SetNext(mood)
+	mood := &chain.Mood{
+		BaseAdviser: chain.BaseAdviser{
+			Bot: bot,
+		},
+	}
+	mood.SetNext(taste)
+	poll := &chain.Poll{
+		BaseAdviser: chain.BaseAdviser{
+			Bot: bot,
+		},
+	}
+	poll.SetNext(mood)
 
 	for update := range updates {
-		if update.Message != nil { // If we got a message
-			handlers.Logger.Log.Info("Request to bot", zap.String("UserName", update.Message.From.UserName))
-
-			if update.Message == nil {
-				continue
-			}
-
-			if update.Message.IsCommand() {
-				handler.HandleCommand(handlers, models.Bot, update.Message, taste, update)
-			} else {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, handlers.FileForUnknown.SendData())
-				models.Bot.Send(msg)
-			}
-
-		}
+		//if update.Message != nil { // If we got a message
+		//	handlers.Logger.Log.Info("Request to bot", zap.String("UserName", update.Message.From.UserName))
+		//
+		//	if update.Message == nil {
+		//		continue
+		//	}
+		//
+		//	if update.Message.IsCommand() {
+		//		handler.HandleCommand(handlers, models.Bot, update.Message, auth, update)
+		//	} else {
+		//		msg := tgbotapi.NewMessage(update.Message.Chat.ID, handlers.FileForUnknown.SendData())
+		//		models.Bot.Send(msg)
+		//	}
+		//
+		//}
+		go processMsg(poll, update)
 	}
 
 	logger.Log.Info("Start bot...")
 }
-
-func readMessages(logger *logging.Logger) {
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
-
-	updates := models.Bot.GetUpdatesChan(u)
-
-	handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger)
-
-	//set chain
-	mood := &chain.Mood{
-		BaseAdviser: chain.BaseAdviser{
-			Bot: models.Bot,
-		},
-	}
-	taste := &chain.Taste{
-		BaseAdviser: chain.BaseAdviser{
-			Bot: models.Bot,
-		},
-	}
-	taste.SetNext(mood)
-
-	for update := range updates {
-		if update.Message != nil { // If we got a message
-			handlers.Logger.Log.Info("Request to bot", zap.String("UserName", update.Message.From.UserName))
-
-			if update.Message == nil {
-				continue
-			}
-
-			if update.Message.IsCommand() {
-				handler.HandleCommand(handlers, models.Bot, update.Message, taste, update)
-			} else {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, handlers.FileForUnknown.SendData())
-				models.Bot.Send(msg)
-			}
-
+func processMsg(chain chain.MessageHandler, update tgbotapi.Update) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("err recover", err)
+			fmt.Println("stacktrace from panic: ", string(debug.Stack()))
 		}
+	}()
+
+	var chatID int64
+	if update.Message != nil {
+		chatID = update.Message.Chat.ID
+	} else if update.PollAnswer != nil {
+		chatID = update.PollAnswer.User.ID
+	} else {
+		fmt.Println("failed")
+		return
 	}
+
+	chain.Execute(chatID, nil, update)
 }

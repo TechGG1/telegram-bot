@@ -1,7 +1,5 @@
 package models
 
-import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-
 type Beer struct {
 	ID               int           `json:"id"`
 	Name             string        `json:"name"`
@@ -31,4 +29,13 @@ type Product struct {
 
 type FoodPairing string
 
-var Bot *tgbotapi.BotAPI
+type Taste string
+
+var (
+	Bitter  Taste = "bitter"
+	Sweet   Taste = "sweet"
+	Neutral Taste = "neutral"
+)
+
+var PollQuestionsMood = []string{"fine", "sad", "party"}
+var PollQuestionsTaste = []string{"bitter", "sweet", "neutral"}
