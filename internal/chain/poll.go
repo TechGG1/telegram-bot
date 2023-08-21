@@ -9,16 +9,13 @@ type Poll struct {
 	BaseAdviser
 }
 
-func (a *Poll) Execute(chatID int64, filter *Filter, update tgbotapi.Update) {
-	if a.isMoodSelected {
+func (a *Poll) Execute(chatID int64, filter *models.Filter, update tgbotapi.Update) {
+	if a.isSpecSelected {
 		a.Next.Execute(chatID, filter, update)
 		return
-	}
-	filter = &Filter{
-		Attr: make([]string, 3),
 	}
 	if err := a.sendPoll(chatID, "Mood", models.PollQuestionsMood); err != nil {
 		a.SomethingWentWrong(chatID)
 	}
-	a.isMoodSelected = true
+	a.isSpecSelected = true
 }

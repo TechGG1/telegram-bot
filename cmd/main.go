@@ -10,6 +10,8 @@ import (
 	"os"
 	"runtime/debug"
 	"telegram-bot/internal/chain"
+	"telegram-bot/internal/handler"
+	"telegram-bot/internal/models"
 	"telegram-bot/logging"
 )
 
@@ -38,13 +40,14 @@ func main() {
 
 	updates := bot.GetUpdatesChan(u)
 
-	//handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger)
+	handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger)
 
 	//set chain
 	taste := &chain.Taste{
 		BaseAdviser: chain.BaseAdviser{
 			Bot: bot,
 		},
+		H: handlers,
 	}
 	mood := &chain.Mood{
 		BaseAdviser: chain.BaseAdviser{
@@ -97,6 +100,24 @@ func processMsg(chain chain.MessageHandler, update tgbotapi.Update) {
 		fmt.Println("failed")
 		return
 	}
+	filter := &models.Filter{}
+	chain.Execute(chatID, filter, update)
+}
 
-	chain.Execute(chatID, nil, update)
+func HandleCommand(handler *handler.Handler, bot *tgbotapi.BotAPI, msg *tgbotapi.Message, ch chain.MessageHandler, update tgbotapi.Update) {
+	//switch msg.Command() {
+	//case "start":
+	//	handler.Start(bot, msg.Chat.ID)
+	//case "help":
+	//	handler.Help(bot, msg.Chat.ID)
+	//case "random":
+	//	handler.RandomBeer(bot, msg.Chat.ID)
+	//case "name":
+	//	handler.BeerName(bot, msg.Chat.ID, []byte(msg.Text))
+	//case "advice":
+	//	go ch.Execute(msg.Chat.ID, &chain.Filter{}, update)
+	//default:
+	//	handler.UnknownReq(bot, msg.Chat.ID)
+	//}
+	ch.Execute(msg.Chat.ID, &models.Filter{}, update)
 }

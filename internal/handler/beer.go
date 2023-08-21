@@ -103,3 +103,49 @@ func (h *Handler) BeerName(bot *tgbotapi.BotAPI, chatID int64, name []byte) {
 	msg := tgbotapi.NewMessage(chatID, string(beerBytes))
 	bot.Send(msg)
 }
+
+func (h *Handler) FindBeerByParams(bot *tgbotapi.BotAPI, chatID int64, params map[string]string) {
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", "https://api.punkapi.com/v2/beers", nil)
+	if err != nil {
+		h.Logger.Log.Error("error in FindBeerByParams: curl beer with params", zap.Error(err))
+		return
+	}
+	//req.Header.Add("beer_name", params["beer_name"])
+	//req.Header.Add("abv_gt", params["abv_gt"])
+	//req.Header.Add("page", "1")
+	//req.Header.Add("per_page", "1")
+
+	q := req.URL.Query()
+	q.Add("beer_name", params["beer_name"])
+	q.Add("abv_gt", params["abv_gt"])
+	q.Add("page", "1")
+	q.Add("per_page", "1")
+	req.URL.RawQuery = q.Encode()
+
+	fmt.Println(req.URL.String())
+
+	resp, err := client.Do(req)
+
+	//resp, err := http.Get("https://api.punkapi.com/v2/beers/random")
+	if err != nil {
+		h.Logger.Log.Error("error in FindBeerByParams: curl beer with params", zap.Error(err))
+		return
+	}
+	defer resp.Body.Close()
+
+	beer, err := getBeer(resp)
+	if err != nil {
+		h.Logger.Log.Error("Error in RandomBeer", zap.Error(err))
+		return
+	}
+
+	beerBytes, err := json.Marshal(beer)
+	if err != nil {
+		h.Logger.Log.Error("Error in RandomBeer(Marshal)", zap.Error(err))
+		return
+	}
+	h.sendMessage(bot, chatID, string(beerBytes))
+}

@@ -39,3 +39,7 @@ var (
 
 var PollQuestionsMood = []string{"fine", "sad", "party"}
 var PollQuestionsTaste = []string{"bitter", "sweet", "neutral"}
+
+type Filter struct {
+	Attr []string
+}

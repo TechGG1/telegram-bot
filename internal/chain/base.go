@@ -3,14 +3,11 @@ package chain
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"telegram-bot/internal/models"
 )
 
-type Filter struct {
-	Attr []string
-}
-
 type MessageHandler interface {
-	Execute(int64, *Filter, tgbotapi.Update)
+	Execute(int64, *models.Filter, tgbotapi.Update)
 	SetNext(MessageHandler)
 }
 
@@ -29,6 +26,7 @@ func (b *BaseAdviser) SetNext(next MessageHandler) {
 func (b *BaseAdviser) sendPoll(chatID int64, question string, pollQuestions []string) error {
 	// send poll
 	poll := tgbotapi.NewPoll(chatID, question, pollQuestions...)
+	poll.IsAnonymous = false
 	poll.AllowsMultipleAnswers = false
 	b.SendMsg(poll)
 
