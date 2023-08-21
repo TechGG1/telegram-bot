@@ -113,10 +113,6 @@ func (h *Handler) FindBeerByParams(bot *tgbotapi.BotAPI, chatID int64, params ma
 		h.Logger.Log.Error("error in FindBeerByParams: curl beer with params", zap.Error(err))
 		return
 	}
-	//req.Header.Add("beer_name", params["beer_name"])
-	//req.Header.Add("abv_gt", params["abv_gt"])
-	//req.Header.Add("page", "1")
-	//req.Header.Add("per_page", "1")
 
 	q := req.URL.Query()
 	q.Add("beer_name", params["beer_name"])
