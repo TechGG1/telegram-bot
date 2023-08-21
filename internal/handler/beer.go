@@ -72,19 +72,6 @@ func (h *Handler) RandomBeer(bot *tgbotapi.BotAPI, chatID int64) {
 		h.Logger.Log.Error("Error in RandomBeer", zap.Error(err))
 		return
 	}
-	//1111111111111111111111111111111111111
-	//beerString := fmt.Sprintf("%+v", beer)
-	//h.sendMessage(bot, chatID, beerString)
-
-	//22222222222222222222222222222222222
-	//beerBytes, err := json.Marshal(beer)
-	//if err != nil {
-	//	h.Logger.Log.Error("Error in RandomBeer(Marshal)", zap.Error(err))
-	//	return
-	//}
-	//h.sendMessage(bot, chatID, string(beerBytes))
-
-	//3333333333333333333333333333333333333
 	beerJson, err := json.MarshalIndent(beer, "", "  ")
 	if err != nil {
 		h.Logger.Log.Error("Error in RandomBeer", zap.Error(err))
