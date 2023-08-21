@@ -16,21 +16,3 @@ func NewHandler(memURL tgbotapi.FileURL, log *logging.Logger) *Handler {
 		Logger:         log,
 	}
 }
-
-//func HandleCommand(handler *Handler, bot *tgbotapi.BotAPI, msg *tgbotapi.Message, ch chain.MessageHandler, update tgbotapi.Update) {
-//	//switch msg.Command() {
-//	//case "start":
-//	//	handler.Start(bot, msg.Chat.ID)
-//	//case "help":
-//	//	handler.Help(bot, msg.Chat.ID)
-//	//case "random":
-//	//	handler.RandomBeer(bot, msg.Chat.ID)
-//	//case "name":
-//	//	handler.BeerName(bot, msg.Chat.ID, []byte(msg.Text))
-//	//case "advice":
-//	//	go ch.Execute(msg.Chat.ID, &chain.Filter{}, update)
-//	//default:
-//	//	handler.UnknownReq(bot, msg.Chat.ID)
-//	//}
-//	ch.Execute(msg.Chat.ID, &models.Filter{}, update)
-//}

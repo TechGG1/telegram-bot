@@ -18,7 +18,8 @@ func (h *Handler) sendMessage(bot *tgbotapi.BotAPI, chatID int64, text string) {
 }
 
 func (h *Handler) Start(bot *tgbotapi.BotAPI, chatID int64) {
-	h.sendMessage(bot, chatID, "Hi, I can advice you a delicious beer")
+	h.sendMessage(bot, chatID, "Hi, I can advice you a delicious beer\n"+
+		"Send /help to know about my features\n")
 }
 
 func (h *Handler) Help(bot *tgbotapi.BotAPI, chatID int64) {
@@ -26,7 +27,7 @@ func (h *Handler) Help(bot *tgbotapi.BotAPI, chatID int64) {
 		"/start - Start chatting with the bot\n"+
 		"/help - Get a list of available commands\n"+
 		"/random - Get a random delicious beer\n"+
-		"/name [args] - Get a list of available beer with specific name\n")
+		"/advice - ... \n")
 }
 
 func (h *Handler) UnknownReq(bot *tgbotapi.BotAPI, chatID int64) {
@@ -108,7 +109,7 @@ func (h *Handler) FindBeerByParams(bot *tgbotapi.BotAPI, chatID int64, params ma
 
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", "https://api.punkapi.com/v2/beers", nil)
+	req, err := http.NewRequest("GET", "https://api.punkapi.com/v2/beers/random", nil)
 	if err != nil {
 		h.Logger.Log.Error("error in FindBeerByParams: curl beer with params", zap.Error(err))
 		return
@@ -125,7 +126,6 @@ func (h *Handler) FindBeerByParams(bot *tgbotapi.BotAPI, chatID int64, params ma
 
 	resp, err := client.Do(req)
 
-	//resp, err := http.Get("https://api.punkapi.com/v2/beers/random")
 	if err != nil {
 		h.Logger.Log.Error("error in FindBeerByParams: curl beer with params", zap.Error(err))
 		return

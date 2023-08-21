@@ -63,22 +63,24 @@ func main() {
 	poll.SetNext(mood)
 
 	for update := range updates {
-		//if update.Message != nil { // If we got a message
-		//	handlers.Logger.Log.Info("Request to bot", zap.String("UserName", update.Message.From.UserName))
-		//
-		//	if update.Message == nil {
-		//		continue
-		//	}
-		//
-		//	if update.Message.IsCommand() {
-		//		handler.HandleCommand(handlers, models.Bot, update.Message, auth, update)
-		//	} else {
-		//		msg := tgbotapi.NewMessage(update.Message.Chat.ID, handlers.FileForUnknown.SendData())
-		//		models.Bot.Send(msg)
-		//	}
-		//
-		//}
-		go processMsg(poll, update)
+		if update.Message != nil || update.PollAnswer != nil {
+
+			//if update.Message == nil && update.PollAnswer == nil {
+			//	continue
+			//}
+
+			//if update.Message.IsCommand() {
+			//	HandleCommand(handlers, bot, update.Message, poll, update)
+			//} else {
+			//	msg := tgbotapi.NewMessage(update.Message.Chat.ID, handlers.FileForUnknown.SendData())
+			//	bot.Send(msg)
+			//}
+
+			HandleCommand(handlers, bot, update.Message, poll, update)
+
+		}
+
+		//HandleCommand(handlers, bot, update.Message, poll, update)
 	}
 
 	logger.Log.Info("Start bot...")
@@ -105,19 +107,27 @@ func processMsg(chain chain.MessageHandler, update tgbotapi.Update) {
 }
 
 func HandleCommand(handler *handler.Handler, bot *tgbotapi.BotAPI, msg *tgbotapi.Message, ch chain.MessageHandler, update tgbotapi.Update) {
-	//switch msg.Command() {
-	//case "start":
-	//	handler.Start(bot, msg.Chat.ID)
-	//case "help":
-	//	handler.Help(bot, msg.Chat.ID)
-	//case "random":
-	//	handler.RandomBeer(bot, msg.Chat.ID)
-	//case "name":
-	//	handler.BeerName(bot, msg.Chat.ID, []byte(msg.Text))
-	//case "advice":
-	//	go ch.Execute(msg.Chat.ID, &chain.Filter{}, update)
-	//default:
-	//	handler.UnknownReq(bot, msg.Chat.ID)
-	//}
-	ch.Execute(msg.Chat.ID, &models.Filter{}, update)
+	fmt.Println("--------------- in HandleCommand ---------------")
+	if msg != nil && msg.IsCommand() {
+		switch msg.Command() {
+		case "start":
+			handler.Start(bot, msg.Chat.ID)
+		case "help":
+			handler.Help(bot, msg.Chat.ID)
+		case "random":
+			handler.RandomBeer(bot, msg.Chat.ID)
+		case "name":
+			handler.BeerName(bot, msg.Chat.ID, []byte(msg.Text))
+		case "advice":
+			go processMsg(ch, update)
+		default:
+			handler.UnknownReq(bot, msg.Chat.ID)
+		}
+	} else if update.PollAnswer != nil {
+		fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", update.PollAnswer.OptionIDs)
+		go processMsg(ch, update)
+	} else {
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, handler.FileForUnknown.SendData())
+		bot.Send(msg)
+	}
 }

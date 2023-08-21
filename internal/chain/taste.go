@@ -40,6 +40,7 @@ func (d *Taste) Execute(chatID int64, filter *models.Filter, update tgbotapi.Upd
 }
 
 func IdentifyParams(filter *models.Filter) (map[string]string, error) {
+	//todo create logic for identifying params by mood and taste
 	return map[string]string{
 		"beer_name": "IPA",
 		"abv_gt":    "6.0",
