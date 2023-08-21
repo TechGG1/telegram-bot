@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	url "net/url"
 	"telegram-bot/internal/models"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -14,7 +13,11 @@ import (
 
 func (h *Handler) sendMessage(bot *tgbotapi.BotAPI, chatID int64, text string) {
 	msg := tgbotapi.NewMessage(chatID, text)
-	bot.Send(msg)
+	_, err := bot.Send(msg)
+	if err != nil {
+		h.Logger.Log.Error("Error in sendMessage", zap.Error(err))
+		return
+	}
 }
 
 func (h *Handler) Start(bot *tgbotapi.BotAPI, chatID int64) {
@@ -33,7 +36,11 @@ func (h *Handler) Help(bot *tgbotapi.BotAPI, chatID int64) {
 func (h *Handler) UnknownReq(bot *tgbotapi.BotAPI, chatID int64) {
 	h.sendMessage(bot, chatID, "ha-ha")
 	msg := tgbotapi.NewMessage(chatID, h.FileForUnknown.SendData())
-	bot.Send(msg)
+	_, err := bot.Send(msg)
+	if err != nil {
+		h.Logger.Log.Error("Error in sendMessage", zap.Error(err))
+		return
+	}
 }
 
 func getBeer(r *http.Response) ([]models.Beer, error) {
@@ -73,19 +80,25 @@ func (h *Handler) RandomBeer(bot *tgbotapi.BotAPI, chatID int64) {
 	h.sendMessage(bot, chatID, string(beerBytes))
 }
 
-func (h *Handler) BeerName(bot *tgbotapi.BotAPI, chatID int64, name []byte) {
-	u, err := url.Parse("https://api.punkapi.com/v2")
-	u.Scheme = "https"
-	u.Host = "api.punkapi.com/v2"
-	q := u.Query()
-	q.Set("beer_name", string(name))
-	q.Set("page", "1")
-	q.Set("per_page", "1")
-	u.RawQuery = q.Encode()
-	fmt.Println("------------", u.RequestURI())
-	resp, err := http.Get(u.RequestURI())
+func (h *Handler) BeerName(bot *tgbotapi.BotAPI, chatID int64, name string) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://api.punkapi.com/v2/beers/random", nil)
 	if err != nil {
-		h.Logger.Log.Error("Error in RandomBeer: Curl random beer", zap.Error(err))
+		h.Logger.Log.Error("error in FindBeerByParams: curl beer with params", zap.Error(err))
+		return
+	}
+	q := req.URL.Query()
+	q.Add("beer_name", name)
+	q.Add("page", "1")
+	q.Add("per_page", "1")
+	req.URL.RawQuery = q.Encode()
+
+	fmt.Println(req.URL.String())
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		h.Logger.Log.Error("error in FindBeerByParams: curl beer with params", zap.Error(err))
 		return
 	}
 	defer resp.Body.Close()
@@ -101,12 +114,10 @@ func (h *Handler) BeerName(bot *tgbotapi.BotAPI, chatID int64, name []byte) {
 		h.Logger.Log.Error("Error in RandomBeer(Marshal)", zap.Error(err))
 		return
 	}
-	msg := tgbotapi.NewMessage(chatID, string(beerBytes))
-	bot.Send(msg)
+	h.sendMessage(bot, chatID, string(beerBytes))
 }
 
 func (h *Handler) FindBeerByParams(bot *tgbotapi.BotAPI, chatID int64, params map[string]string) {
-
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", "https://api.punkapi.com/v2/beers/random", nil)

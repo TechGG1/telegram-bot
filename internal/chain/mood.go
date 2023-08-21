@@ -1,7 +1,6 @@
 package chain
 
 import (
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"telegram-bot/internal/models"
 )
@@ -36,8 +35,5 @@ func (r *Mood) Execute(chatID int64, filter *models.Filter, update tgbotapi.Upda
 		r.SomethingWentWrong(chatID)
 	}
 
-	//msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Add %s value", filter.Attr))
-	//r.SendMsg(msg)
-	fmt.Println(fmt.Sprintf("Add %s value", filter.Attr))
 	r.Next.Execute(chatID, filter, update)
 }

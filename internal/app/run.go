@@ -84,7 +84,7 @@ func HandleCommand(handler *handler.Handler, bot *tgbotapi.BotAPI, msg *tgbotapi
 		case "random":
 			handler.RandomBeer(bot, msg.Chat.ID)
 		case "name":
-			handler.BeerName(bot, msg.Chat.ID, []byte(msg.Text))
+			handler.BeerName(bot, msg.Chat.ID, msg.Text)
 		case "advice":
 			go processMsg(ch, update)
 		default:
@@ -94,7 +94,10 @@ func HandleCommand(handler *handler.Handler, bot *tgbotapi.BotAPI, msg *tgbotapi
 		go processMsg(ch, update)
 	} else {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, handler.FileForUnknown.SendData())
-		bot.Send(msg)
+		_, err := bot.Send(msg)
+		if err != nil {
+			handler.Logger.Log.Error("error in sendMessage", zap.Error(err))
+		}
 	}
 }
 
