@@ -43,3 +43,15 @@ var PollQuestionsTaste = []string{"bitter", "sweet", "neutral"}
 type Filter struct {
 	Attr []string
 }
+
+type RespBeer struct {
+	Name          string        `json:"name"`
+	Tagline       string        `json:"tagline"`
+	Description   string        `json:"description"`
+	FirstBrewed   string        `json:"first_brewed"`
+	ImageURL      string        `json:"image_url"`
+	ABV           float32       `json:"abv"`
+	IBU           float32       `json:"ibu"`
+	FoodPairing   []FoodPairing `json:"food_pairing"`
+	ContributedBy string        `json:"contributed_by"`
+}

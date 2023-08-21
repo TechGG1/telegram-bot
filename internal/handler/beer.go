@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"telegram-bot/internal/models"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -43,8 +44,8 @@ func (h *Handler) UnknownReq(bot *tgbotapi.BotAPI, chatID int64) {
 	}
 }
 
-func getBeer(r *http.Response) ([]models.Beer, error) {
-	var arr []models.Beer
+func getBeer(r *http.Response) ([]models.RespBeer, error) {
+	var arr []models.RespBeer
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
@@ -71,13 +72,27 @@ func (h *Handler) RandomBeer(bot *tgbotapi.BotAPI, chatID int64) {
 		h.Logger.Log.Error("Error in RandomBeer", zap.Error(err))
 		return
 	}
+	//1111111111111111111111111111111111111
+	//beerString := fmt.Sprintf("%+v", beer)
+	//h.sendMessage(bot, chatID, beerString)
 
-	beerBytes, err := json.Marshal(beer)
+	//22222222222222222222222222222222222
+	//beerBytes, err := json.Marshal(beer)
+	//if err != nil {
+	//	h.Logger.Log.Error("Error in RandomBeer(Marshal)", zap.Error(err))
+	//	return
+	//}
+	//h.sendMessage(bot, chatID, string(beerBytes))
+
+	//3333333333333333333333333333333333333
+	beerJson, err := json.MarshalIndent(beer, "", "  ")
 	if err != nil {
-		h.Logger.Log.Error("Error in RandomBeer(Marshal)", zap.Error(err))
+		h.Logger.Log.Error("Error in RandomBeer", zap.Error(err))
 		return
 	}
-	h.sendMessage(bot, chatID, string(beerBytes))
+	strBeer := string(beerJson)
+	strBeer = regexp.MustCompile(`[^a-zA-Z0-9:,.\/ \n]+`).ReplaceAllString(strBeer, "")
+	h.sendMessage(bot, chatID, strBeer)
 }
 
 func (h *Handler) BeerName(bot *tgbotapi.BotAPI, chatID int64, name string) {
