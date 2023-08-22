@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"regexp"
+	"strconv"
 	"telegram-bot/internal/models"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -91,7 +93,8 @@ func (h *Handler) BeerName(bot *tgbotapi.BotAPI, chatID int64, name string) {
 	}
 	q := req.URL.Query()
 	q.Add("beer_name", name)
-	q.Add("page", "1")
+	randPage := rand.Intn(100)
+	q.Add("page", strconv.Itoa(randPage))
 	q.Add("per_page", "1")
 	req.URL.RawQuery = q.Encode()
 
@@ -111,12 +114,14 @@ func (h *Handler) BeerName(bot *tgbotapi.BotAPI, chatID int64, name string) {
 		return
 	}
 
-	beerBytes, err := json.Marshal(beer)
+	beerJson, err := json.MarshalIndent(beer, "", "  ")
 	if err != nil {
-		h.Logger.Log.Error("Error in RandomBeer(Marshal)", zap.Error(err))
+		h.Logger.Log.Error("Error in RandomBeer", zap.Error(err))
 		return
 	}
-	h.sendMessage(bot, chatID, string(beerBytes))
+	strBeer := string(beerJson)
+	strBeer = regexp.MustCompile(`[^a-zA-Z0-9:,.\/ \n]+`).ReplaceAllString(strBeer, "")
+	h.sendMessage(bot, chatID, strBeer)
 }
 
 func (h *Handler) FindBeerByParams(bot *tgbotapi.BotAPI, chatID int64, params map[string]string) {
@@ -131,7 +136,8 @@ func (h *Handler) FindBeerByParams(bot *tgbotapi.BotAPI, chatID int64, params ma
 	q := req.URL.Query()
 	q.Add("beer_name", params["beer_name"])
 	q.Add("abv_gt", params["abv_gt"])
-	q.Add("page", "1")
+	randPage := rand.Intn(100)
+	q.Add("page", strconv.Itoa(randPage))
 	q.Add("per_page", "1")
 	req.URL.RawQuery = q.Encode()
 
@@ -151,10 +157,12 @@ func (h *Handler) FindBeerByParams(bot *tgbotapi.BotAPI, chatID int64, params ma
 		return
 	}
 
-	beerBytes, err := json.Marshal(beer)
+	beerJson, err := json.MarshalIndent(beer, "", "  ")
 	if err != nil {
-		h.Logger.Log.Error("Error in RandomBeer(Marshal)", zap.Error(err))
+		h.Logger.Log.Error("Error in RandomBeer", zap.Error(err))
 		return
 	}
-	h.sendMessage(bot, chatID, string(beerBytes))
+	strBeer := string(beerJson)
+	strBeer = regexp.MustCompile(`[^a-zA-Z0-9:,.\/ \n]+`).ReplaceAllString(strBeer, "")
+	h.sendMessage(bot, chatID, strBeer)
 }

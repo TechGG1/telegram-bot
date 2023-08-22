@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"telegram-bot/internal/models"
 )
@@ -10,30 +11,28 @@ type Mood struct {
 }
 
 func (r *Mood) Execute(chatID int64, filter *models.Filter, update tgbotapi.Update) {
-	if update.PollAnswer.OptionIDs == nil {
+	if filter.IsMood {
+		msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Add from mood %s", filter.Attr))
+		r.SendMsg(msg)
 		r.Next.Execute(chatID, filter, update)
-		return
-	}
-	if r.isMoodSelected {
-		r.Next.Execute(chatID, filter, update)
+		fmt.Println("---mood", r.BaseAdviser)
 		return
 	}
 	opts := update.PollAnswer.OptionIDs
+	attrs := make([]string, 0, 3)
 	for i := 0; i < len(opts); i++ {
 		switch opts[i] {
 		case 0:
-			filter.Attr = append(filter.Attr, "fine")
+			attrs = append(attrs, "fine")
 		case 1:
-			filter.Attr = append(filter.Attr, "sad")
+			attrs = append(attrs, "sad")
 		case 2:
-			filter.Attr = append(filter.Attr, "party")
+			attrs = append(attrs, "party")
 		}
 	}
-
-	r.isMoodSelected = true
-	if err := r.sendPoll(chatID, "Taste", models.PollQuestionsTaste); err != nil {
+	filter.Attr = append(filter.Attr, attrs...)
+	filter.IsMood = true
+	if err := r.sendPoll(chatID, "Choose a taste of pairing food", models.PollQuestionsTaste); err != nil {
 		r.SomethingWentWrong(chatID)
 	}
-
-	r.Next.Execute(chatID, filter, update)
 }

@@ -12,11 +12,8 @@ type MessageHandler interface {
 }
 
 type BaseAdviser struct {
-	Bot             *tgbotapi.BotAPI
-	Next            MessageHandler
-	isMoodSelected  bool
-	isSpecSelected  bool
-	isTasteSelected bool
+	Bot  *tgbotapi.BotAPI
+	Next MessageHandler
 }
 
 func (b *BaseAdviser) SetNext(next MessageHandler) {

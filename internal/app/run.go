@@ -43,25 +43,25 @@ func Run() error {
 
 	updates := bot.GetUpdatesChan(u)
 
-	handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger)
+	var fil models.Filter
+
+	handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger, &fil)
 
 	//set chain
+
+	base := chain.BaseAdviser{
+		Bot: bot,
+	}
 	taste := &chain.Taste{
-		BaseAdviser: chain.BaseAdviser{
-			Bot: bot,
-		},
-		H: handlers,
+		BaseAdviser: base,
+		H:           handlers,
 	}
 	mood := &chain.Mood{
-		BaseAdviser: chain.BaseAdviser{
-			Bot: bot,
-		},
+		BaseAdviser: base,
 	}
 	mood.SetNext(taste)
 	poll := &chain.Poll{
-		BaseAdviser: chain.BaseAdviser{
-			Bot: bot,
-		},
+		BaseAdviser: base,
 	}
 	poll.SetNext(mood)
 
@@ -86,12 +86,12 @@ func HandleCommand(handler *handler.Handler, bot *tgbotapi.BotAPI, msg *tgbotapi
 		case "name":
 			handler.BeerName(bot, msg.Chat.ID, msg.Text)
 		case "advice":
-			go processMsg(ch, update)
+			go processMsg(ch, update, handler)
 		default:
 			handler.UnknownReq(bot, msg.Chat.ID)
 		}
 	} else if update.PollAnswer != nil {
-		go processMsg(ch, update)
+		go processMsg(ch, update, handler)
 	} else {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, handler.FileForUnknown.SendData())
 		_, err := bot.Send(msg)
@@ -101,7 +101,7 @@ func HandleCommand(handler *handler.Handler, bot *tgbotapi.BotAPI, msg *tgbotapi
 	}
 }
 
-func processMsg(chain chain.MessageHandler, update tgbotapi.Update) {
+func processMsg(ch chain.MessageHandler, update tgbotapi.Update, h *handler.Handler) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println("err recover", err)
@@ -118,6 +118,5 @@ func processMsg(chain chain.MessageHandler, update tgbotapi.Update) {
 		fmt.Println("failed")
 		return
 	}
-	filter := &models.Filter{}
-	chain.Execute(chatID, filter, update)
+	ch.Execute(chatID, h.Filter, update)
 }

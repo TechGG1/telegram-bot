@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"telegram-bot/internal/handler"
 	"telegram-bot/internal/models"
@@ -12,37 +13,31 @@ type Taste struct {
 }
 
 func (d *Taste) Execute(chatID int64, filter *models.Filter, update tgbotapi.Update) {
-	if d.isTasteSelected {
-		params, err := IdentifyParams(filter)
-		if err != nil {
-			d.H.Logger.Log.Error("error in converting params")
-			return
-		}
-		d.H.FindBeerByParams(d.Bot, chatID, params)
-		return
-	}
-
 	opts := update.PollAnswer.OptionIDs
+	attrs := make([]string, 0, 4)
 	for i := 0; i < len(opts); i++ {
 		switch opts[i] {
 		case 0:
-			filter.Attr = append(filter.Attr, "bitter")
+			attrs = append(attrs, "bitter")
 		case 1:
-			filter.Attr = append(filter.Attr, "sweet")
+			attrs = append(attrs, "sweet")
 		case 2:
-			filter.Attr = append(filter.Attr, "neutral")
+			attrs = append(attrs, "neutral")
+		case 3:
+			attrs = append(attrs, "spicy")
 		}
 	}
-	d.isTasteSelected = true
-	msg := tgbotapi.NewMessage(chatID, "This is my advice!")
+	filter.Attr = append(filter.Attr, attrs...)
+	msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Add from taste %s", filter.Attr))
 	d.SendMsg(msg)
-	//d.Next.Execute(chatID, filter, update)
-}
+	params, err := d.H.IdentifyParams(filter)
+	if err != nil {
+		d.H.Logger.Log.Error("error in converting params")
+		return
+	}
+	d.H.FindBeerByParams(d.Bot, chatID, params)
 
-func IdentifyParams(filter *models.Filter) (map[string]string, error) {
-	//todo create logic for identifying params by mood and taste
-	return map[string]string{
-		"beer_name": "IPA",
-		"abv_gt":    "6.0",
-	}, nil
+	filter.IsMood = false
+	filter.IsSpec = false
+	filter.IsTaste = false
 }
