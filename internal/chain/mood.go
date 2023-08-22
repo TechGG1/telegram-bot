@@ -10,9 +10,10 @@ type Mood struct {
 	BaseAdviser
 }
 
-func (r *Mood) Execute(chatID int64, filter *models.Filter, update tgbotapi.Update) {
-	if filter.IsMood {
-		msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Add from mood %s", filter.Attr))
+func (r *Mood) Execute(chatID int64, filter *models.FilterPoll, update tgbotapi.Update) {
+	filt := filter.Poll[chatID]
+	if filt.IsMood {
+		msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Add from mood %s", filt.Attr))
 		r.SendMsg(msg)
 		r.Next.Execute(chatID, filter, update)
 		fmt.Println("---mood", r.BaseAdviser)
@@ -30,9 +31,10 @@ func (r *Mood) Execute(chatID int64, filter *models.Filter, update tgbotapi.Upda
 			attrs = append(attrs, "party")
 		}
 	}
-	filter.Attr = append(filter.Attr, attrs...)
-	filter.IsMood = true
+	filt.Attr = append(filter.Poll[chatID].Attr, attrs...)
+	filt.IsMood = true
 	if err := r.sendPoll(chatID, "Choose a taste of pairing food", models.PollQuestionsTaste); err != nil {
 		r.SomethingWentWrong(chatID)
 	}
+	filter.Poll[chatID] = filt
 }

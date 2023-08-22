@@ -11,7 +11,6 @@ import (
 	"runtime/debug"
 	"telegram-bot/internal/chain"
 	"telegram-bot/internal/handler"
-	"telegram-bot/internal/models"
 	"telegram-bot/logging"
 )
 
@@ -43,12 +42,12 @@ func Run() error {
 
 	updates := bot.GetUpdatesChan(u)
 
-	var fil models.Filter
+	//var fil models.Filter
+	filters := handler.NewFilterPoll()
 
-	handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger, &fil)
+	handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger, filters)
 
 	//set chain
-
 	base := chain.BaseAdviser{
 		Bot: bot,
 	}
@@ -118,5 +117,6 @@ func processMsg(ch chain.MessageHandler, update tgbotapi.Update, h *handler.Hand
 		fmt.Println("failed")
 		return
 	}
-	ch.Execute(chatID, h.Filter, update)
+
+	ch.Execute(chatID, &h.Filter, update)
 }

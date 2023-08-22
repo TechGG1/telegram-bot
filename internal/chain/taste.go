@@ -12,7 +12,8 @@ type Taste struct {
 	H *handler.Handler
 }
 
-func (d *Taste) Execute(chatID int64, filter *models.Filter, update tgbotapi.Update) {
+func (d *Taste) Execute(chatID int64, fil *models.FilterPoll, update tgbotapi.Update) {
+	filter := fil.Poll[chatID]
 	opts := update.PollAnswer.OptionIDs
 	attrs := make([]string, 0, 4)
 	for i := 0; i < len(opts); i++ {
@@ -30,14 +31,12 @@ func (d *Taste) Execute(chatID int64, filter *models.Filter, update tgbotapi.Upd
 	filter.Attr = append(filter.Attr, attrs...)
 	msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Add from taste %s", filter.Attr))
 	d.SendMsg(msg)
-	params, err := d.H.IdentifyParams(filter)
+	params, err := d.H.IdentifyParams(&filter)
 	if err != nil {
 		d.H.Logger.Log.Error("error in converting params")
 		return
 	}
 	d.H.FindBeerByParams(d.Bot, chatID, params)
 
-	filter.IsMood = false
-	filter.IsSpec = false
-	filter.IsTaste = false
+	handler.DeleteFromPoll(fil, chatID)
 }

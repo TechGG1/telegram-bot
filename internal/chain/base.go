@@ -7,7 +7,7 @@ import (
 )
 
 type MessageHandler interface {
-	Execute(int64, *models.Filter, tgbotapi.Update)
+	Execute(int64, *models.FilterPoll, tgbotapi.Update)
 	SetNext(MessageHandler)
 }
 

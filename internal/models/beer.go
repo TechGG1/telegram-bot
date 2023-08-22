@@ -40,13 +40,6 @@ var (
 var PollQuestionsMood = []string{"fine", "sad", "party"}
 var PollQuestionsTaste = []string{"bitter", "sweet", "neutral", "spicy"}
 
-type Filter struct {
-	Attr    []string
-	IsMood  bool
-	IsTaste bool
-	IsSpec  bool
-}
-
 type RespBeer struct {
 	Name          string        `json:"name"`
 	Tagline       string        `json:"tagline"`

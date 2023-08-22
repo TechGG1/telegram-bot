@@ -3,6 +3,7 @@ package chain
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"telegram-bot/internal/handler"
 	"telegram-bot/internal/models"
 )
 
@@ -10,10 +11,16 @@ type Poll struct {
 	BaseAdviser
 }
 
-func (a *Poll) Execute(chatID int64, filter *models.Filter, update tgbotapi.Update) {
-	if filter.IsSpec {
-		a.Next.Execute(chatID, filter, update)
-		fmt.Println("---poll", a.BaseAdviser)
+func (a *Poll) Execute(chatID int64, filt *models.FilterPoll, update tgbotapi.Update) {
+	ok := handler.IsFilterExists(filt, chatID)
+	if !ok {
+		handler.AddFilterForChat(filt, chatID)
+	}
+	filter := filt.Poll[chatID]
+	fmt.Println("000000000000000", filt.Poll[chatID])
+
+	if filt.Poll[chatID].IsSpec {
+		a.Next.Execute(chatID, filt, update)
 		return
 	}
 	filter.Attr = make([]string, 0, 3)
@@ -21,4 +28,5 @@ func (a *Poll) Execute(chatID int64, filter *models.Filter, update tgbotapi.Upda
 		a.SomethingWentWrong(chatID)
 	}
 	filter.IsSpec = true
+	filt.Poll[chatID] = filter
 }

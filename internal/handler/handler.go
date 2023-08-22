@@ -9,10 +9,10 @@ import (
 type Handler struct {
 	FileForUnknown tgbotapi.FileURL
 	Logger         *logging.Logger
-	Filter         *models.Filter
+	Filter         models.FilterPoll
 }
 
-func NewHandler(memURL tgbotapi.FileURL, log *logging.Logger, filter *models.Filter) *Handler {
+func NewHandler(memURL tgbotapi.FileURL, log *logging.Logger, filter models.FilterPoll) *Handler {
 	return &Handler{
 		FileForUnknown: memURL,
 		Logger:         log,
