@@ -45,7 +45,7 @@ func Run() error {
 	//var fil models.Filter
 	filters := handler.NewFilterPoll()
 
-	handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger, filters)
+	handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger, &filters)
 
 	//set chain
 	base := chain.BaseAdviser{
@@ -118,5 +118,5 @@ func processMsg(ch chain.MessageHandler, update tgbotapi.Update, h *handler.Hand
 		return
 	}
 
-	ch.Execute(chatID, &h.Filter, update)
+	ch.Execute(chatID, h.Filter, update)
 }

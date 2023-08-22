@@ -17,15 +17,11 @@ func AddFilterForChat(p *models.FilterPoll, chatId int64) {
 	filter := models.Filter{}
 	p.Poll[chatId] = filter
 	p.Mu.Unlock()
-	return
 }
 
 func IsFilterExists(p *models.FilterPoll, chatId int64) bool {
 	_, ok := p.Poll[chatId]
-	if !ok {
-		return false
-	}
-	return true
+	return ok
 }
 
 func DeleteFromPoll(p *models.FilterPoll, chatId int64) {
