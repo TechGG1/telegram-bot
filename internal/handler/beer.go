@@ -96,7 +96,6 @@ func (h *Handler) BeerName(bot *tgbotapi.BotAPI, chatID int64, name string) {
 		h.Logger.Log.Error("error in FindBeerByParams: curl beer with params", zap.Error(err))
 		return
 	}
-	fmt.Sprintf("----------------name---%s---", name)
 	q := req.URL.Query()
 	q.Add("beer_name", name)
 	randPage := rand.Intn(10) + 1
