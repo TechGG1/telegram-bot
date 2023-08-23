@@ -3,7 +3,6 @@ package handler
 import "telegram-bot/internal/models"
 
 func (h *Handler) IdentifyParams(filter *models.Filter) (map[string]string, error) {
-	//todo create logic for identifying params by mood and taste
 	params := make(map[string]string, 3)
 	for _, item := range filter.Attr {
 		switch item {

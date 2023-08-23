@@ -3,7 +3,7 @@ package chain
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"telegram-bot/internal/handler"
+	"telegram-bot/internal/chain/filter"
 	"telegram-bot/internal/models"
 )
 
@@ -12,9 +12,9 @@ type Poll struct {
 }
 
 func (a *Poll) Execute(chatID int64, filt *models.FilterPoll, update tgbotapi.Update) {
-	ok := handler.IsFilterExists(filt, chatID)
+	ok := filter.IsFilterExists(filt, chatID)
 	if !ok {
-		handler.AddFilterForChat(filt, chatID)
+		filter.AddFilterForChat(filt, chatID)
 	}
 	filter := filt.Poll[chatID]
 	fmt.Println("000000000000000", filt.Poll[chatID])

@@ -3,6 +3,7 @@ package chain
 import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	filterChain "telegram-bot/internal/chain/filter"
 	"telegram-bot/internal/handler"
 	"telegram-bot/internal/models"
 )
@@ -13,6 +14,10 @@ type Taste struct {
 }
 
 func (d *Taste) Execute(chatID int64, fil *models.FilterPoll, update tgbotapi.Update) {
+	if update.PollAnswer == nil {
+		filterChain.DeleteFromPoll(fil, chatID)
+		return
+	}
 	filter := fil.Poll[chatID]
 	opts := update.PollAnswer.OptionIDs
 	attrs := make([]string, 0, 4)
@@ -38,5 +43,5 @@ func (d *Taste) Execute(chatID int64, fil *models.FilterPoll, update tgbotapi.Up
 	}
 	d.H.FindBeerByParams(d.Bot, chatID, params)
 
-	handler.DeleteFromPoll(fil, chatID)
+	filterChain.DeleteFromPoll(fil, chatID)
 }

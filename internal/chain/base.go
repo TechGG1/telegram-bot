@@ -30,14 +30,12 @@ func (b *BaseAdviser) sendPoll(chatID int64, question string, pollQuestions []st
 	return nil
 }
 
-// SendMsg to telegram
 func (b *BaseAdviser) SendMsg(c tgbotapi.Chattable) {
 	if _, err := b.Bot.Send(c); err != nil {
 		fmt.Println("err when send msg", err)
 	}
 }
 
-// SomethingWentWrong send error to telegram
 func (b *BaseAdviser) SomethingWentWrong(chatID int64) {
 	msg := tgbotapi.NewMessage(chatID, "Somening went wrong, try later")
 

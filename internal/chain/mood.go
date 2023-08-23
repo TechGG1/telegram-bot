@@ -11,6 +11,11 @@ type Mood struct {
 }
 
 func (r *Mood) Execute(chatID int64, filter *models.FilterPoll, update tgbotapi.Update) {
+	if update.PollAnswer == nil {
+		r.Next.Execute(chatID, filter, update)
+		return
+	}
+
 	filt := filter.Poll[chatID]
 	if filt.IsMood {
 		msg := tgbotapi.NewMessage(chatID, fmt.Sprintf("Add from mood %s", filt.Attr))

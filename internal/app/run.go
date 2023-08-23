@@ -10,6 +10,7 @@ import (
 	"os"
 	"runtime/debug"
 	"telegram-bot/internal/chain"
+	"telegram-bot/internal/chain/filter"
 	"telegram-bot/internal/handler"
 	"telegram-bot/logging"
 )
@@ -42,8 +43,7 @@ func Run() error {
 
 	updates := bot.GetUpdatesChan(u)
 
-	//var fil models.Filter
-	filters := handler.NewFilterPoll()
+	filters := filter.NewFilterPoll()
 
 	handlers := handler.NewHandler(tgbotapi.FileURL(os.Getenv("UNKNOWN_COMMAND_MEM_URL")), logger, &filters)
 
@@ -83,7 +83,7 @@ func HandleCommand(handler *handler.Handler, bot *tgbotapi.BotAPI, msg *tgbotapi
 		case "random":
 			handler.RandomBeer(bot, msg.Chat.ID)
 		case "name":
-			handler.BeerName(bot, msg.Chat.ID, msg.Text)
+			handler.BeerName(bot, msg.Chat.ID, msg.CommandArguments())
 		case "advice":
 			go processMsg(ch, update, handler)
 		default:

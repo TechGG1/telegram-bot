@@ -30,10 +30,11 @@ func (h *Handler) Start(bot *tgbotapi.BotAPI, chatID int64) {
 
 func (h *Handler) Help(bot *tgbotapi.BotAPI, chatID int64) {
 	h.sendMessage(bot, chatID, "Available commands:\n"+
-		"/start - Start chatting with the bot\n"+
-		"/help - Get a list of available commands\n"+
-		"/random - Get a random delicious beer\n"+
-		"/advice - ... \n")
+		"/start - Start chatting with the bot!\n"+
+		"/help - Get a list of available commands!\n"+
+		"/random - Get a random delicious beer!\n"+
+		"/name [n] - Indicate some word (instead of [n]) that should be in the name of the beer and we will find it for you!\n"+
+		"/advice - Take surveys and get advice! \n")
 }
 
 func (h *Handler) UnknownReq(bot *tgbotapi.BotAPI, chatID int64) {
@@ -85,15 +86,20 @@ func (h *Handler) RandomBeer(bot *tgbotapi.BotAPI, chatID int64) {
 }
 
 func (h *Handler) BeerName(bot *tgbotapi.BotAPI, chatID int64, name string) {
+	if name == "" {
+		h.sendMessage(bot, chatID, "Enter the name or just part ot the name! ))")
+		return
+	}
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.punkapi.com/v2/beers/random", nil)
+	req, err := http.NewRequest("GET", "https://api.punkapi.com/v2/beers", nil)
 	if err != nil {
 		h.Logger.Log.Error("error in FindBeerByParams: curl beer with params", zap.Error(err))
 		return
 	}
+	fmt.Sprintf("----------------name---%s---", name)
 	q := req.URL.Query()
 	q.Add("beer_name", name)
-	randPage := rand.Intn(100)
+	randPage := rand.Intn(10) + 1
 	q.Add("page", strconv.Itoa(randPage))
 	q.Add("per_page", "1")
 	req.URL.RawQuery = q.Encode()
@@ -136,7 +142,7 @@ func (h *Handler) FindBeerByParams(bot *tgbotapi.BotAPI, chatID int64, params ma
 	q := req.URL.Query()
 	q.Add("beer_name", params["beer_name"])
 	q.Add("abv_gt", params["abv_gt"])
-	randPage := rand.Intn(100)
+	randPage := rand.Intn(100) + 1
 	q.Add("page", strconv.Itoa(randPage))
 	q.Add("per_page", "1")
 	req.URL.RawQuery = q.Encode()
